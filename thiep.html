@@ -1,0 +1,295 @@
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chúc Mừng Ngày Phụ Nữ Việt Nam 20-10</title>
+  <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Montserrat:wght@400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: #030008;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+      position: relative;
+      color: #fff;
+    }
+
+    #spaceCanvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 1;
+    }
+
+    .container {
+      position: relative;
+      z-index: 10;
+      text-align: center;
+      padding: 20px;
+      max-width: 600px;
+      width: 90%;
+      transition: all 1.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 28px;
+      padding: 45px 30px;
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      box-shadow: 0 0 50px rgba(233, 30, 99, 0.35), inset 0 0 20px rgba(255, 255, 255, 0.1);
+      animation: floatAnimation 4s ease-in-out infinite alternate;
+    }
+
+    @keyframes floatAnimation {
+      from { transform: translateY(0px) rotate(-0.5deg); }
+      to { transform: translateY(-12px) rotate(0.5deg); }
+    }
+
+    .subtitle {
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 3px;
+      color: #ff80ab;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      text-shadow: 0 0 8px rgba(255, 128, 171, 0.6);
+    }
+
+    .recipient-title {
+      font-family: 'Great Vibes', cursive;
+      font-size: 52px;
+      color: #ffd700;
+      margin-bottom: 25px;
+      text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 0 0 25px rgba(255, 64, 129, 0.6);
+    }
+
+    .message-body {
+      font-size: 16px;
+      line-height: 1.9;
+      color: #f3e5f5;
+      margin-bottom: 35px;
+      text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
+    }
+
+    .gift-box {
+      font-size: 70px;
+      cursor: pointer;
+      display: inline-block;
+      transition: transform 0.4s;
+      animation: giftPulse 1.8s infinite alternate;
+      filter: drop-shadow(0 0 15px rgba(255, 105, 180, 0.8));
+    }
+
+    @keyframes giftPulse {
+      from { transform: scale(1) rotate(0deg); }
+      to { transform: scale(1.15) rotate(6deg); }
+    }
+
+    .gift-text {
+      font-size: 13px;
+      color: #b39ddb;
+      margin-top: 8px;
+    }
+
+    /* Màn hình thông điệp sâu Vũ Trụ */
+    .space-details {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%) scale(0.6);
+      z-index: 20;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 1.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      width: 88%;
+      max-width: 580px;
+      text-align: center;
+    }
+
+    .space-details.active {
+      opacity: 1;
+      transform: translate(-50%, -50%) scale(1);
+      pointer-events: auto;
+    }
+
+    .space-card {
+      background: rgba(10, 2, 22, 0.75);
+      backdrop-filter: blur(25px);
+      border-radius: 28px;
+      padding: 40px 30px;
+      border: 1px solid rgba(255, 215, 0, 0.4);
+      box-shadow: 0 0 60px rgba(255, 215, 0, 0.3), inset 0 0 30px rgba(233, 30, 99, 0.3);
+    }
+
+    .btn-back {
+      margin-top: 25px;
+      background: linear-gradient(45deg, #ff4081, #ab47bc);
+      color: white;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 25px;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 0 20px rgba(255, 64, 129, 0.6);
+      transition: 0.3s;
+    }
+
+    .btn-back:hover {
+      transform: scale(1.08);
+      box-shadow: 0 0 30px rgba(255, 64, 129, 0.9);
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Vũ Trụ 3D Canvas -->
+  <div id="spaceCanvas"></div>
+
+  <!-- Thiệp Chính -->
+  <div class="container" id="mainCard">
+    <div class="card">
+      <div class="subtitle">Chào Mừng Ngày Phụ Nữ Việt Nam 20/10</div>
+      <div class="recipient-title" id="recipientDisplay">Gửi Vì Sao Sáng Nhất</div>
+      
+      <div class="message-body" id="messageDisplay">
+        Chúc bạn luôn rạng rỡ, hạnh phúc và nhận được thật nhiều yêu thương trong ngày đặc biệt này!
+      </div>
+
+      <div>
+        <div class="gift-box" onclick="openSpaceSurprise()">🎁</div>
+        <div class="gift-text">Chạm vào hộp quà để mở bất ngờ từ Vũ Trụ!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bất Ngờ Vũ Trụ -->
+  <div class="space-details" id="spaceDetails">
+    <div class="space-card">
+      <div class="subtitle">Bất Ngờ Dành Cho Bạn</div>
+      <div class="recipient-title" id="spaceRecipient">Gửi Người Tuyệt Vời</div>
+      <div class="message-body" id="spaceMessage">
+        Giữa hàng tỷ vì sao trong dải ngân hà, sự tồn tại của bạn là điều vô cùng đặc biệt và duy nhất. Chúc bạn luôn tự tin tỏa sáng rực rỡ! ✨🌸
+      </div>
+      <button class="btn-back" onclick="closeSpaceSurprise()"> Quay Lại Thiệp</button>
+    </div>
+  </div>
+
+  <script>
+    // 1. ĐỌC URL PARAMETERS
+    const urlParams = new URLSearchParams(window.location.search);
+    const toName = urlParams.get('to');
+    const customMsg = urlParams.get('msg');
+
+    if (toName) {
+      document.getElementById('recipientDisplay').innerText = `Gửi ${toName}!`;
+      document.getElementById('spaceRecipient').innerText = `Gửi ${toName}!`;
+    }
+    if (customMsg) {
+      document.getElementById('messageDisplay').innerText = customMsg;
+      document.getElementById('spaceMessage').innerText = customMsg;
+    }
+
+    // 2. DỰNG VŨ TRỤ 3D VỚI HỆ THỐNG SAO LẤP LÁNH (THREE.JS)
+    const container = document.getElementById('spaceCanvas');
+    const scene = new THREE.Scene();
+    const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+    camera.position.z = 5;
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    container.appendChild(renderer.domElement);
+
+    const count = 4000;
+    const geometry = new THREE.BufferGeometry();
+    const positions = new Float32Array(count * 3);
+    const colors = new Float32Array(count * 3);
+
+    for (let i = 0; i < count * 3; i += 3) {
+      positions[i] = (Math.random() - 0.5) * 18;
+      positions[i + 1] = (Math.random() - 0.5) * 18;
+      positions[i + 2] = (Math.random() - 0.5) * 18;
+
+      colors[i] = Math.random() * 0.6 + 0.4;     // R
+      colors[i + 1] = Math.random() * 0.4 + 0.2; // G
+      colors[i + 2] = 1;                         // B
+    }
+
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+
+    const material = new THREE.PointsMaterial({
+      size: 0.038,
+      vertexColors: true,
+      transparent: true,
+      opacity: 0.9
+    });
+
+    const starParticles = new THREE.Points(geometry, material);
+    scene.add(starParticles);
+
+    function animate() {
+      requestAnimationFrame(animate);
+      starParticles.rotation.y += 0.0012;
+      starParticles.rotation.x += 0.0006;
+      renderer.render(scene, camera);
+    }
+    animate();
+
+    window.addEventListener('resize', () => {
+      camera.aspect = window.innerWidth / window.innerHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    // 3. HIỆU ỨNG TƯƠNG TÁC HỘP QUÀ & CHUYỂN CẢNH
+    function openSpaceSurprise() {
+      // Pháo hoa trái tim nổ tung
+      confetti({
+        particleCount: 90,
+        spread: 120,
+        origin: { y: 0.6 },
+        colors: ['#ff4081', '#ffd700', '#e040fb']
+      });
+
+      // Đẩy nhanh tốc độ xoay sao 3D
+      let speed = 0.0012;
+      const speedUp = setInterval(() => {
+        speed += 0.002;
+        starParticles.rotation.y += speed;
+        if (speed > 0.03) clearInterval(speedUp);
+      }, 50);
+
+      // Ẩn thiệp chính & hiện thiệp bất ngờ
+      const mainCard = document.getElementById('mainCard');
+      mainCard.style.opacity = '0';
+      mainCard.style.transform = 'scale(0.7)';
+      mainCard.style.pointerEvents = 'none';
+
+      setTimeout(() => {
+        document.getElementById('spaceDetails').classList.add('active');
+      }, 600);
+    }
+
+    function closeSpaceSurprise() {
+      document.getElementById('spaceDetails').classList.remove('active');
+
+      setTimeout(() => {
+        const mainCard = document.getElementById('mainCard');
+        mainCard.style.opacity = '1';
+        mainCard.style.transform = 'scale(1)';
+        mainCard.style.pointerEvents = 'auto';
+      }, 500);
+    }
+  </script>
+</body>
+</html>
