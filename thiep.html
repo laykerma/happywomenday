@@ -148,6 +148,79 @@
       transform: scale(1.08);
       box-shadow: 0 0 30px rgba(255, 64, 129, 0.9);
     }
+
+    /* ===== MAN HINH CHUYEN CANH PHAO HOA ===== */
+    #transitionOverlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(3, 0, 8, 0.92);
+      z-index: 50;
+      pointer-events: none;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 1s ease, visibility 1s ease;
+      backdrop-filter: blur(6px);
+      overflow: hidden;
+    }
+
+    #transitionOverlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    #transitionCanvas {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: 1;
+    }
+
+    /* ===== CHU CHU CHU LỜI CHÚC CHẠY DÒNG ===== */
+    #scrollingWish {
+      position: absolute;
+      bottom: 18%; left: 0;
+      width: 100%;
+      text-align: center;
+      z-index: 60;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 1s ease, visibility 1s ease;
+    }
+
+    #scrollingWish.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .wish-marquee {
+      display: inline-block;
+      white-space: nowrap;
+      color: #fff;
+      font-size: clamp(1.1rem, 4vw, 1.8rem);
+      font-weight: 700;
+      font-family: 'Montserrat', sans-serif;
+      text-shadow: 0 0 20px rgba(255, 255, 255, 0.9), 0 0 40px rgba(255, 215, 0, 0.6);
+      animation: scrollWish 14s linear infinite;
+      padding: 0 100%;
+    }
+
+    @keyframes scrollWish {
+      0%   { transform: translateX(100%); opacity: 0; }
+      10%  { transform: translateX(0); opacity: 1; }
+      90%  { transform: translateX(-100%); opacity: 1; }
+      100% { transform: translateX(-200%); opacity: 0; }
+    }
+
+    .wish-marquee .wish-part {
+      display: inline-block;
+      margin: 0 18px;
+    }
+
+    .wish-marquee .wish-part:nth-child(1) { color: #ff00ff; text-shadow: 0 0 20px #ff00ff; }
+    .wish-marquee .wish-part:nth-child(2) { color: #00ffff; text-shadow: 0 0 20px #00ffff; }
+    .wish-marquee .wish-part:nth-child(3) { color: #ffd700; text-shadow: 0 0 20px #ffd700; }
+    .wish-marquee .wish-part:nth-child(4) { color: #ff6b35; text-shadow: 0 0 20px #ff6b35; }
   </style>
 </head>
 <body>
@@ -181,6 +254,21 @@
         Giữa hàng tỷ vì sao trong dải ngân hà, sự tồn tại của bạn là điều vô cùng đặc biệt và duy nhất. Chúc bạn luôn tự tin tỏa sáng rực rỡ! ✨🌸
       </div>
       <button class="btn-back" onclick="closeSpaceSurprise()"> Quay Lại Thiệp</button>
+    </div>
+  </div>
+
+  <!-- Màn hình chuyển cảnh pháo hoa -->
+  <div id="transitionOverlay">
+    <canvas id="transitionCanvas"></canvas>
+  </div>
+
+  <!-- Lời chúc chữ chạy -->
+  <div id="scrollingWish">
+    <div class="wish-marquee">
+      <span class="wish-part">Chúc bạn ngày 20/10 vui vẻ!</span>
+      <span class="wish-part">Hạnh phúc và tươi tắn!</span>
+      <span class="wish-part">Nhận được thật nhiều yêu thương!</span>
+      <span class="wish-part">Luôn rạng rỡ như ánh sao!</span>
     </div>
   </div>
 
@@ -251,33 +339,139 @@
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    // 3. HIỆU ỨNG TƯƠNG TÁC HỘP QUÀ & CHUYỂN CẢNH
+    // 3. HỆ THỐNG PHAO HOA 2D CHO MAN HINH CHUYEN CANH
+    const tCanvas = document.getElementById('transitionCanvas');
+    const tCtx = tCanvas.getContext('2d');
+    let tWidth, tHeight;
+    let particles = [];
+
+    function resizeTCanvas() {
+      tWidth = tCanvas.width = window.innerWidth;
+      tHeight = tCanvas.height = window.innerHeight;
+    }
+    resizeTCanvas();
+    window.addEventListener('resize', resizeTCanvas);
+
+    class Particle {
+      constructor(x, y, color) {
+        this.x = x;
+        this.y = y;
+        this.color = color;
+        const angle = Math.random() * Math.PI * 2;
+        const speed = 2 + Math.random() * 6;
+        this.vx = Math.cos(angle) * speed;
+        this.vy = Math.sin(angle) * speed;
+        this.life = 1.0;
+        this.decay = 0.015 + Math.random() * 0.02;
+        this.size = 2 + Math.random() * 4;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        this.vy += 0.15;
+        this.life -= this.decay;
+        this.size *= 0.96;
+      }
+      draw(ctx) {
+        ctx.globalAlpha = this.life;
+        ctx.fillStyle = this.color;
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    }
+
+    function createFirework(x, y) {
+      const color = `hsl(${Math.random() * 360}, 100%, 60%)`;
+      const count = 60 + Math.random() * 60;
+      for (let i = 0; i < count; i++) {
+        particles.push(new Particle(x, y, color));
+      }
+    }
+
+    let autoFireworkTimer = 0;
+
+    function animateTransition() {
+      const overlay = document.getElementById('transitionOverlay');
+      if (!overlay.classList.contains('active')) {
+        requestAnimationFrame(animateTransition);
+        return;
+      }
+
+      tCtx.fillStyle = 'rgba(3, 0, 8, 0.3)';
+      tCtx.fillRect(0, 0, tWidth, tHeight);
+
+      // Sao lan sot nen
+      tCtx.fillStyle = 'rgba(255, 255, 255, 0.5)';
+      for (let i = 0; i < 40; i++) {
+        const sx = (Math.sin(i * 137 + Date.now() * 0.001) * 0.5 + 0.5) * tWidth;
+        const sy = (Math.cos(i * 73 + Date.now() * 0.0015) * 0.5 + 0.5) * tHeight;
+        tCtx.fillRect(sx, sy, 1.5, 1.5);
+      }
+
+      for (let i = particles.length - 1; i >= 0; i--) {
+        const p = particles[i];
+        p.update();
+        p.draw(tCtx);
+        if (p.life <= 0 || p.size < 0.5) particles.splice(i, 1);
+      }
+
+      autoFireworkTimer++;
+      if (autoFireworkTimer > 35) {
+        createFirework(Math.random() * tWidth, Math.random() * tHeight * 0.6);
+        autoFireworkTimer = 0;
+      }
+
+      requestAnimationFrame(animateTransition);
+    }
+    animateTransition();
+
+    // 4. HIỆU ỨNG TƯƠNG TÁC HỘP QUÀ & CHUYỂN CẢNH
+    let giftOpened = false;
+
     function openSpaceSurprise() {
-      // Pháo hoa trái tim nổ tung
+      if (giftOpened) return;
+      giftOpened = true;
+
+      // Hien man hinh chuyen canh + phao hoa
+      const transitionOverlay = document.getElementById('transitionOverlay');
+      if (transitionOverlay) transitionOverlay.classList.add('active');
+
+      // Hien loi chuc chay dong
+      const scrollingWish = document.getElementById('scrollingWish');
+      if (scrollingWish) scrollingWish.classList.add('active');
+
+      // Pháo hoa confetti
       confetti({
-        particleCount: 90,
-        spread: 120,
-        origin: { y: 0.6 },
-        colors: ['#ff4081', '#ffd700', '#e040fb']
+        particleCount: 120,
+        spread: 140,
+        origin: { y: 0.5 },
+        colors: ['#ff4081', '#ffd700', '#e040fb', '#00ffff']
       });
 
-      // Đẩy nhanh tốc độ xoay sao 3D
+      // Phao hoa 3 o vi tri trung tam
+      createFirework(tWidth / 2, tHeight * 0.35);
+      setTimeout(() => createFirework(tWidth / 2, tHeight * 0.35), 500);
+      setTimeout(() => createFirework(tWidth / 2, tHeight * 0.35), 1000);
+
+      // Tang toc xoay sao 3D
       let speed = 0.0012;
       const speedUp = setInterval(() => {
         speed += 0.002;
         starParticles.rotation.y += speed;
-        if (speed > 0.03) clearInterval(speedUp);
+        if (speed > 0.04) clearInterval(speedUp);
       }, 50);
 
-      // Ẩn thiệp chính & hiện thiệp bất ngờ
+      // An thiep chinh
       const mainCard = document.getElementById('mainCard');
       mainCard.style.opacity = '0';
       mainCard.style.transform = 'scale(0.7)';
       mainCard.style.pointerEvents = 'none';
 
+      // Sau 1.5s hien thiep bat ngờ
       setTimeout(() => {
         document.getElementById('spaceDetails').classList.add('active');
-      }, 600);
+      }, 1500);
     }
 
     function closeSpaceSurprise() {
